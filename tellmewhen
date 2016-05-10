@@ -1,0 +1,33 @@
+#! /bin/bash
+
+SOCKET_HOST="localhost"
+SOCKET_PORT=58732
+
+error () {
+    echo >&2 "error:" "$@"
+    exit 1
+}
+
+
+send () {
+    echo -n "$1" | nc -4u -w1 "$SOCKET_HOST" "$SOCKET_PORT"
+}
+
+
+[ "$#" -eq 0 ] && error "missing COMMAND argument"
+case "$1" in
+    cancel)
+        if [ "$#" -eq 1 ]; then
+            send "cancel"
+        else
+            send "cancel $2"
+        fi
+        ;;
+    start)
+        [ "$#" -lt 2 ] && error "start: missing EVENT_NAME argument"
+        send "start $2"
+        ;;
+    *)
+        error "unknown command: $1"
+        ;;
+esac

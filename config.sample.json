@@ -1,0 +1,14 @@
+{ "events": [
+    {
+        "name": "event 1",
+        "command": ["aplay", "prepare-for-1.wav"],
+        "separation_time": 30,
+        "triggers": [{ "offset_time": -5 }, { "offset_time": -1 }]
+    },
+    {
+        "name": "event 2",
+        "command": ["aplay", "2-happened.wav"],
+        "separation_time": 17.23,
+        "triggers": [{ "offset_time": 1.5 }]
+    }
+] }

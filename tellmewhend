@@ -1,0 +1,66 @@
+#! /usr/bin/env python3
+
+import sys
+import os
+import signal
+import socketserver
+import threading
+import queue
+
+import tellmewhenlib
+option_defns = tellmewhenlib.option.option_defns
+
+# TODO:
+# - consistent logging, with accurate timestamps
+# - better error messages on config validation
+# - general windows support
+#   - cli:
+#       - rewrite in Python
+#       - host/port as options
+#   - keyboard shortcuts (recommend AHK)
+#   - audio playing (sndrec32 /play /close "$f")
+#   - pyinstaller
+# - makefile, etc.
+# - documentation (--help, readme)
+
+
+def on_quit (options, queue, thread, server):
+    queue.put('quit')
+    thread.join()
+    server.server_close()
+    sys.exit(0)
+
+
+class RequestHandler(socketserver.BaseRequestHandler):
+    def __init__ (self, queue, *args, **kwargs):
+        self._queue = queue
+        socketserver.BaseRequestHandler.__init__(self, *args, **kwargs)
+
+    def invalid (self, msg):
+        print('received invalid request:', msg, file=sys.stderr)
+
+    def handle (self):
+        raw_data, socket = self.request
+        try:
+            data = raw_data.decode('utf-8')
+        except UnicodeDecodeError:
+            self.invalid('not valid UTF-8')
+        # TODO: define actual Command classes that parse command messages and
+        #       put instances on queue
+        self._queue.put(data)
+        socket.sendto(b'ack\n', self.client_address)
+
+
+event_defns, options = tellmewhenlib.cli.parse_args()
+queue = queue.Queue()
+thread = threading.Thread(target=tellmewhenlib.worker.run,
+                          args=(event_defns, options, queue))
+server = socketserver.UDPServer(
+    (options[option_defns.socket_host], options[option_defns.socket_port]),
+    lambda *args, **kwargs: RequestHandler(queue, *args, **kwargs))
+
+for sig in (signal.SIGTERM, signal.SIGINT):
+    signal.signal(sig, lambda *args: on_quit(options, queue, thread, server))
+
+thread.start()
+server.serve_forever()
