@@ -13,10 +13,8 @@ option_defns = tellmewhenlib.option.option_defns
 # TODO:
 # - consistent logging, with accurate timestamps
 # - better error messages on config validation
+# - cli: host/port as options
 # - general windows support
-#   - cli:
-#       - rewrite in Python
-#       - host/port as options
 #   - keyboard shortcuts (recommend AHK)
 #   - audio playing (sndrec32 /play /close "$f")
 #   - pyinstaller
@@ -45,8 +43,7 @@ class RequestHandler(socketserver.BaseRequestHandler):
             data = raw_data.decode('utf-8')
         except UnicodeDecodeError:
             self.invalid('not valid UTF-8')
-        # TODO: define actual Command classes that parse command messages and
-        #       put instances on queue
+        import time
         self._queue.put(data)
         socket.sendto(b'ack\n', self.client_address)
 

@@ -1,33 +1,60 @@
-#! /bin/bash
+#! /usr/bin/env python3
 
-SOCKET_HOST="localhost"
-SOCKET_PORT=58732
+import sys
+import socket
 
-error () {
-    echo >&2 "error:" "$@"
-    exit 1
-}
+SOCKET_HOST = 'localhost'
+SOCKET_PORT = 58732
 
 
-send () {
-    echo -n "$1" | nc -4u -w1 "$SOCKET_HOST" "$SOCKET_PORT"
-}
+def error (*args, sock=None):
+    print(*args, file=sys.stderr)
+    if sock:
+        sock.shutdown(socket.SHUT_RDWR)
+    sys.exit(1)
 
 
-[ "$#" -eq 0 ] && error "missing COMMAND argument"
-case "$1" in
-    cancel)
-        if [ "$#" -eq 1 ]; then
-            send "cancel"
-        else
-            send "cancel $2"
-        fi
-        ;;
-    start)
-        [ "$#" -lt 2 ] && error "start: missing EVENT_NAME argument"
-        send "start $2"
-        ;;
-    *)
-        error "unknown command: $1"
-        ;;
-esac
+def send (data):
+    addr = (SOCKET_HOST, SOCKET_PORT)
+    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    s.settimeout(1)
+    s.connect(addr)
+
+    sent = 0
+    while sent < len(data):
+        new_sent = s.send(data[sent:])
+        if new_sent == 0:
+            error('server unreachable', sock=s)
+        sent += new_sent
+    s.shutdown(socket.SHUT_WR)
+
+    chunks = []
+    have = 0
+    while have < 3:
+        chunk = s.recv(3 - have)
+        if chunk == b'':
+            error('server unreachable', sock=s)
+        chunks.append(chunk)
+        have += len(chunk)
+    s.shutdown(socket.SHUT_RD)
+    s.close()
+
+    if b''.join(chunks) != b'ack':
+        error('server returned unexpected reply')
+
+
+if len(sys.argv) == 1:
+    error('missing COMMAND argument')
+
+cmd = sys.argv[1]
+if cmd == 'cancel':
+    if len(sys.argv) == 2:
+        send(b'cancel')
+    else:
+        send(b'cancel ' + sys.argv[2].encode('utf-8'))
+elif cmd == 'start':
+    if len(sys.argv) == 2:
+        error('start: missing EVENT_NAME argument')
+    send(b'start ' + sys.argv[2].encode('utf-8'))
+else:
+    error('unknown command: {}'.format(repr(cmd)))
