@@ -49,7 +49,7 @@ def timer_times (options, timers):
             latest_t = subsequent_t - options[option_defns.min_cmd_separation]
             # move this timer earlier if the next one is too near
             if latest_t < t:
-                print('adjust event: {} ({:.3f})'.format(e, latest_t - t))
+                print('adjust event: {} ({:+.3f})'.format(e, latest_t - t))
                 real_t = latest_t
 
         subsequent_t = real_t
@@ -69,7 +69,7 @@ def process_timers (options, timers):
 
     for real_t, (t, e, trigger) in timer_times(options, timers):
         if real_t <= now:
-            print('[{:.3f}] trigger event: {} (-{:.3f})'.format(now, e, trigger.time))
+            print('[{:.3f}] trigger event: {} ({:+.3f})'.format(now, e, -trigger.time))
             e.trigger()
             new_t = timer_next_time(e, trigger, t - trigger.time)
             timers[trigger] = (new_t, e, trigger)
