@@ -51,8 +51,15 @@ def opt_var_name (o):
 
 
 def add_opt (p, o, *args, **kwargs):
-    p.add_argument(*args, **kwargs, dest=opt_var_name(o),
-                   type=o.parse, default=o.default, help=o.desc)
+    # do it like this because of a weird cx_Freeze bug
+    opts = {
+        'dest': opt_var_name(o),
+        'type': o.parse,
+        'default': o.default,
+        'help': o.desc
+    }
+    opts.update(kwargs)
+    p.add_argument(*args, **opts)
 
 
 def parse_args ():
