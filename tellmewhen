@@ -8,7 +8,7 @@ SOCKET_PORT = 58732
 
 
 def error (*args, sock=None):
-    print(*args, file=sys.stderr)
+    print('error:', *args, file=sys.stderr)
     if sock:
         sock.shutdown(socket.SHUT_RDWR)
     sys.exit(1)
@@ -22,39 +22,48 @@ def send (data):
 
     sent = 0
     while sent < len(data):
-        new_sent = s.send(data[sent:])
-        if new_sent == 0:
-            error('server unreachable', sock=s)
-        sent += new_sent
+        try:
+            new_sent = s.send(data[sent:])
+        except Exception as e:
+            error('while sending:', e, sock=s)
+        else:
+            if new_sent == 0:
+                error('server unreachable', sock=s)
+            sent += new_sent
     s.shutdown(socket.SHUT_WR)
 
     chunks = []
     have = 0
-    while have < 3:
-        chunk = s.recv(3 - have)
-        if chunk == b'':
-            error('server unreachable', sock=s)
-        chunks.append(chunk)
-        have += len(chunk)
+    while have < 4:
+        try:
+            chunk = s.recv(4 - have)
+        except Exception as e:
+            error('while receiving:', e, sock=s)
+        else:
+            if chunk == b'':
+                error('server unreachable', sock=s)
+            chunks.append(chunk)
+            have += len(chunk)
     s.shutdown(socket.SHUT_RD)
     s.close()
 
-    if b''.join(chunks) != b'ack':
+    if b''.join(chunks) != b'ack\n':
         error('server returned unexpected reply')
 
 
-if len(sys.argv) == 1:
-    error('missing COMMAND argument')
+if __name__ == '__main__':
+    if len(sys.argv) == 1:
+        error('missing COMMAND argument')
 
-cmd = sys.argv[1]
-if cmd == 'cancel':
-    if len(sys.argv) == 2:
-        send(b'cancel')
+    cmd = sys.argv[1]
+    if cmd == 'cancel':
+        if len(sys.argv) == 2:
+            send(b'cancel')
+        else:
+            send(b'cancel ' + sys.argv[2].encode('utf-8'))
+    elif cmd == 'start':
+        if len(sys.argv) == 2:
+            error('start: missing EVENT_NAME argument')
+        send(b'start ' + sys.argv[2].encode('utf-8'))
     else:
-        send(b'cancel ' + sys.argv[2].encode('utf-8'))
-elif cmd == 'start':
-    if len(sys.argv) == 2:
-        error('start: missing EVENT_NAME argument')
-    send(b'start ' + sys.argv[2].encode('utf-8'))
-else:
-    error('unknown command: {}'.format(repr(cmd)))
+        error('unknown command: {}'.format(repr(cmd)))

@@ -11,15 +11,11 @@ import tellmewhenlib
 option_defns = tellmewhenlib.option.option_defns
 
 # TODO:
-# - consistent logging, with accurate timestamps
+# - documentation (--help, readme (windows: recommend ahk/cmdmp3win.exe))
+# - makefile, etc.
 # - better error messages on config validation
 # - cli: host/port as options
-# - general windows support
-#   - keyboard shortcuts (recommend AHK)
-#   - audio playing (sndrec32 /play /close "$f")
-#   - pyinstaller
-# - makefile, etc.
-# - documentation (--help, readme)
+# - consistent logging, with accurate timestamps
 
 
 def on_quit (options, queue, thread, server):
@@ -48,16 +44,17 @@ class RequestHandler(socketserver.BaseRequestHandler):
         socket.sendto(b'ack\n', self.client_address)
 
 
-event_defns, options = tellmewhenlib.cli.parse_args()
-queue = queue.Queue()
-thread = threading.Thread(target=tellmewhenlib.worker.run,
-                          args=(event_defns, options, queue))
-server = socketserver.UDPServer(
-    (options[option_defns.socket_host], options[option_defns.socket_port]),
-    lambda *args, **kwargs: RequestHandler(queue, *args, **kwargs))
+if __name__ == '__main__':
+    event_defns, options = tellmewhenlib.cli.parse_args()
+    queue = queue.Queue()
+    thread = threading.Thread(target=tellmewhenlib.worker.run,
+                            args=(event_defns, options, queue))
+    server = socketserver.UDPServer(
+        (options[option_defns.socket_host], options[option_defns.socket_port]),
+        lambda *args, **kwargs: RequestHandler(queue, *args, **kwargs))
 
-for sig in (signal.SIGTERM, signal.SIGINT):
-    signal.signal(sig, lambda *args: on_quit(options, queue, thread, server))
+    for sig in (signal.SIGTERM, signal.SIGINT):
+        signal.signal(sig, lambda *args: on_quit(options, queue, thread, server))
 
-thread.start()
-server.serve_forever()
+    thread.start()
+    server.serve_forever()
