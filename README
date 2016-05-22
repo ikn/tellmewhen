@@ -1,0 +1,75 @@
+tellmewhen 0.1.0.
+
+A utility for managing short timers in real time.
+
+http://ikn.org.uk/tellmewhen
+
+    LICENSE
+
+Licensed under the GNU General Public License, version 3; if this was not
+included, you can find it here:
+    http://www.gnu.org/licenses/gpl-3.0.txt
+
+    DEPENDENCIES
+
+Python 3 (>= 3.3): https://www.python.org
+
+    INSTALLATION
+
+There is no installation method on Windows.  On Unix-like OSs, with Python 3,
+bash, sed, find and make, run
+
+    ./configure
+    make
+    make install
+
+The makefile respects the `prefix', `DESTDIR', etc. arguments.  Of course,
+`make install' needs to be run as root if installing outside of your home
+directory.  To uninstall, run
+
+    make uninstall
+
+`make clean' and `make distclean' are also supported, and work as expected.
+
+    CONFIGURATION
+
+The server is configured with a JSON configuration file.  An example can be
+found in config.sample.json.  The structure is an object containing an 'events'
+property which is an array of objects.  Each event object represents a timer
+that may execute a command periodically when running, and has the following
+properties:
+
+* name: the name of the event
+* command: array of command followed by arguments to execute when triggering the
+           event
+* separation_time: time between occurrences of this event, in seconds
+* triggers: array of objects indicating times relative to each event occurrence
+            at which the command should be executed, each with the following
+            properties:
+    * offset_time: the time relative to the event occurrence at which to execute
+                   the command, in seconds (may (and usually will) negative)
+
+    USAGE
+
+Start the server, `tellmewhend', then run commands using `tellmewhenc'.  For
+invocation details, pass an argument `--help' to either program.
+
+On Windows, in the source directory, run
+
+    python tellmewhend
+    python tellmewhenc ...
+
+where `python' is the Python 3 interpreter.
+
+On Unix-like OSs, once installed, run
+    tellmewhend
+    tellmewhenc ...
+
+(installed to /usr/local/bin/ by default).  Alternatively, you can run in-place
+without installing by
+
+    ./tellmewhend
+    ./tellmewhenc ...
+
+For example, run a program which sets up keyboard shortcuts to start events, and
+have the command for each play a different sound.

@@ -1,0 +1,17 @@
+#! /bin/bash
+
+# fix scripts' #! lines if Python 3 is not installed as python3
+
+scripts=(tellmewhenc tellmewhend setup get_python_lib)
+
+if [ "$1" = reverse ]; then
+    p="/usr/bin/python3"
+else
+    p=`type -p python3`
+fi
+
+if [ -z "$p" ]; then
+    for script in "${scripts[@]}"; do
+        sed -i "s:^#\!.*$:#\! /usr/bin/env python3:" "$script" || exit 1
+    done
+fi

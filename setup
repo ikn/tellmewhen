@@ -1,0 +1,9 @@
+#! /usr/bin/env python3
+
+# script for building and installing the Python package
+
+from distutils.core import setup
+
+setup(name='tellmewhen', version='0.1.0', packages=[
+    'tellmewhen'
+])

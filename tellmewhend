@@ -1,21 +1,23 @@
 #! /usr/bin/env python3
 
+# This program is free software: you can redistribute it and/or modify it under
+# the terms of the GNU General Public License as published by the Free Software
+# Foundation, either version 3 of the License, or (at your option) any later
+# version.
+
 import sys
+from distutils import sysconfig
 import os
 import signal
 import socketserver
 import threading
 import queue
 
-import tellmewhenlib
-option_defns = tellmewhenlib.option.option_defns
+_LIB_PREFIX = '.' # this line gets replaced at build time
+sys.path.append(sysconfig.get_python_lib(prefix=_LIB_PREFIX))
 
-# TODO:
-# - documentation (--help, readme (windows: recommend ahk/cmdmp3win.exe))
-# - makefile, etc.
-# - better error messages on config validation
-# - cli: host/port as options
-# - consistent logging, with accurate timestamps
+import tellmewhen
+option_defns = tellmewhen.option.option_defns
 
 
 def on_quit (options, queue, thread, server):
@@ -45,9 +47,9 @@ class RequestHandler(socketserver.BaseRequestHandler):
 
 
 if __name__ == '__main__':
-    event_defns, options = tellmewhenlib.cli.parse_args()
+    event_defns, options = tellmewhen.cli.parse_args()
     queue = queue.Queue()
-    thread = threading.Thread(target=tellmewhenlib.worker.run,
+    thread = threading.Thread(target=tellmewhen.worker.run,
                             args=(event_defns, options, queue))
     server = socketserver.UDPServer(
         (options[option_defns.socket_host], options[option_defns.socket_port]),
