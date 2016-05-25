@@ -50,7 +50,7 @@ if __name__ == '__main__':
     event_defns, options = tellmewhen.cli.parse_args()
     queue = queue.Queue()
     thread = threading.Thread(target=tellmewhen.worker.run,
-                            args=(event_defns, options, queue))
+                              args=(event_defns, options, queue))
     server = socketserver.UDPServer(
         (options[option_defns.socket_host], options[option_defns.socket_port]),
         lambda *args, **kwargs: RequestHandler(queue, *args, **kwargs))

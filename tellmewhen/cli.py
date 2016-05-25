@@ -11,6 +11,8 @@ import json
 from . import event, option
 all_option_defns = list(option.option_defns.__dict__.values())
 
+VERSION = '0.1.0'
+
 
 def check (valid):
     if not valid:
@@ -72,8 +74,15 @@ def add_opt (p, o, *args, **kwargs):
 def parse_args ():
     p = argparse.ArgumentParser(
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
-        description='')
-    p.add_argument('config', type=argparse.FileType('r'), help='')
+        description='''
+Start the timing server.  Use `tellmewhenc' to run commands - see the README
+file for general usage details.
+        ''')
+    p.add_argument('config', type=argparse.FileType('r'), help='''
+path to a configuration file in JSON format describing timers to set up - see
+the README file for details on the structure of this file
+                   ''')
+    p.add_argument('--version', action='version', version='%(prog)s ' + VERSION)
 
     od = option.option_defns
     add_opt(p, od.socket_host, '-H', '--host', metavar='HOST')
