@@ -36,6 +36,7 @@ install:
 	@ # readme
 	mkdir -p "$(DESTDIR)$(docdir)/"
 	$(INSTALL_DATA) README "$(DESTDIR)$(docdir)/"
+	$(INSTALL_DATA) config.sample.json "$(DESTDIR)$(docdir)/"
 
 uninstall:
 	@ # executable
