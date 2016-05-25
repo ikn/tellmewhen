@@ -49,10 +49,13 @@ properties:
     * offset_time: the time relative to the event occurrence at which to execute
                    the command, in seconds (may (and usually will) negative)
 
+An example configuration file can be found in `config.sample.json'.
+
     USAGE
 
 Start the server, `tellmewhend', then run commands using `tellmewhenc'.  For
-invocation details, pass an argument `--help' to either program.
+invocation details, pass an argument `--help' to either program.  Available
+commands are documented as part of `tellmewhenc'.
 
 On Windows, in the source directory, run
 

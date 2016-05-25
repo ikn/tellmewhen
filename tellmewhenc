@@ -7,9 +7,11 @@
 
 import sys
 import socket
+import argparse
 
 SOCKET_HOST = 'localhost'
 SOCKET_PORT = 58732
+VERSION = '0.1.0'
 
 
 def error (*args, sock=None):
@@ -60,15 +62,41 @@ if __name__ == '__main__':
     if len(sys.argv) == 1:
         error('missing COMMAND argument')
 
-    cmd = sys.argv[1]
-    if cmd == 'cancel':
-        if len(sys.argv) == 2:
+    p = argparse.ArgumentParser(description='''
+Make changes to ongoing timings.  Start the server first with `tellmewhend' -
+see the README file for general usage details.
+
+For help on commands, run `%(prog)s COMMAND --help'.
+                                ''')
+    p.add_argument('--version', action='version', version='%(prog)s ' + VERSION)
+    subparsers = p.add_subparsers()
+
+    sp = subparsers.add_parser('start', help='start or reset an event timer',
+                               description='''
+Start the timer for an event.  After running this, the event's command will run
+at fixed intervals, for each defined trigger, as configured on the server.  If
+the event is already running, its timer is reset.
+                               ''')
+    sp.set_defaults(command='start')
+    sp.add_argument('event', help='''
+name of the event to start, as defined in the server configuration file
+                    ''')
+    sp = subparsers.add_parser('cancel', help='cancel one or all event timers',
+                               description='''
+Stop the timer for an event, if running.  The command configured for the event
+will not be run again until the event timer is started.  If an event is not
+specified, this command cancels timers for all currently running events.
+                               ''')
+    sp.set_defaults(command='cancel')
+    sp.add_argument('event', nargs='?', help='''
+name of the event to start, as defined in the server configuration file
+                    ''')
+
+    args = p.parse_args()
+    if args.command == 'start':
+        send(b'start ' + args.event.encode('utf-8'))
+    elif args.command == 'cancel':
+        if args.event is None:
             send(b'cancel')
         else:
-            send(b'cancel ' + sys.argv[2].encode('utf-8'))
-    elif cmd == 'start':
-        if len(sys.argv) == 2:
-            error('start: missing EVENT_NAME argument')
-        send(b'start ' + sys.argv[2].encode('utf-8'))
-    else:
-        error('unknown command: {}'.format(repr(cmd)))
+            send(b'cancel ' + args.event.encode('utf-8'))
