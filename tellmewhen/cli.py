@@ -11,7 +11,7 @@ import json
 from . import event, option
 all_option_defns = list(option.option_defns.__dict__.values())
 
-VERSION = '0.1.0'
+VERSION = '0.1.0-next'
 
 
 def check (valid):
@@ -47,11 +47,9 @@ def validate_config_events (events):
 
 def read_config (file_obj):
     config = json.load(file_obj)
+    file_obj.close()
     check(isinstance(config, dict))
     check(set(config.keys()) == set(['events']))
-
-    validate_config_events(config['events'])
-
     return config
 
 
@@ -78,7 +76,7 @@ def parse_args ():
 Start the timing server.  Use `tellmewhenc' to run commands - see the README
 file for general usage details.
         ''')
-    p.add_argument('config', type=argparse.FileType('r'), help='''
+    p.add_argument('config', type=argparse.FileType('r'), nargs='+', help='''
 path to a configuration file in JSON format describing timers to set up - see
 the README file for details on the structure of this file
                    ''')
@@ -93,11 +91,13 @@ the README file for details on the structure of this file
 
     args = p.parse_args()
 
-    config = read_config(args.config)
+    config_events = sum([read_config(config_file_obj)['events']
+                         for config_file_obj in args.config], [])
+    validate_config_events(config_events)
     event_defns = [
         event.Event(e['name'], e['command'], e['separation_time'],
                     [event.Trigger(t['offset_time']) for t in e['triggers']])
-        for e in config['events']
+        for e in config_events
     ]
 
     raw_options = {}

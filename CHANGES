@@ -1,2 +1,5 @@
+0.1.0-next:
+ * accept multiple config files
+
 0.1.0:
  * first release
