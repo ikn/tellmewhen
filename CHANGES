@@ -1,5 +1,6 @@
 0.1.0-next:
- * accept multiple config files
+ * server: accept multiple config files
+ * client: accept host and port options
 
 0.1.0:
  * first release

@@ -9,8 +9,6 @@ import sys
 import socket
 import argparse
 
-SOCKET_HOST = 'localhost'
-SOCKET_PORT = 58732
 VERSION = '0.1.0-next'
 
 
@@ -21,11 +19,14 @@ def error (*args, sock=None):
     sys.exit(1)
 
 
-def send (data):
-    addr = (SOCKET_HOST, SOCKET_PORT)
+def send (host, port, data):
+    addr = (host, port)
     s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     s.settimeout(1)
-    s.connect(addr)
+    try:
+        s.connect(addr)
+    except socket.gaierror as e:
+        error('server unreachable:', e)
 
     sent = 0
     while sent < len(data):
@@ -62,13 +63,19 @@ if __name__ == '__main__':
     if len(sys.argv) == 1:
         error('missing COMMAND argument')
 
-    p = argparse.ArgumentParser(description='''
+    p = argparse.ArgumentParser(
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter,
+        description='''
 Make changes to ongoing timings.  Start the server first with `tellmewhend' -
 see the README file for general usage details.
 
 For help on commands, run `%(prog)s COMMAND --help'.
                                 ''')
     p.add_argument('--version', action='version', version='%(prog)s ' + VERSION)
+    p.add_argument('-H', '--host', type=str, metavar='HOST',
+                   default='localhost', help='hostname to send commands to')
+    p.add_argument('-p', '--port', type=int, metavar='PORT', default=58732,
+                   help='port to send commands to')
     subparsers = p.add_subparsers()
 
     sp = subparsers.add_parser('start', help='start or reset an event timer',
@@ -94,9 +101,9 @@ name of the event to start, as defined in the server configuration file
 
     args = p.parse_args()
     if args.command == 'start':
-        send(b'start ' + args.event.encode('utf-8'))
+        send(args.host, args.port, b'start ' + args.event.encode('utf-8'))
     elif args.command == 'cancel':
         if args.event is None:
-            send(b'cancel')
+            send(args.host, args.port, b'cancel')
         else:
-            send(b'cancel ' + args.event.encode('utf-8'))
+            send(args.host, args.port, b'cancel ' + args.event.encode('utf-8'))
