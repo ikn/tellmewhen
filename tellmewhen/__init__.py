@@ -6,3 +6,4 @@ Foundation, either version 3 of the License, or (at your option) any later
 version."""
 
 from . import event, option, worker, cli
+from .log import log

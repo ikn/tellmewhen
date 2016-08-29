@@ -33,7 +33,7 @@ class RequestHandler(socketserver.BaseRequestHandler):
         socketserver.BaseRequestHandler.__init__(self, *args, **kwargs)
 
     def invalid (self, msg):
-        print('received invalid request:', msg, file=sys.stderr)
+        tellmewhen.log('received invalid request:', msg)
 
     def handle (self):
         raw_data, socket = self.request
@@ -41,9 +41,9 @@ class RequestHandler(socketserver.BaseRequestHandler):
             data = raw_data.decode('utf-8')
         except UnicodeDecodeError:
             self.invalid('not valid UTF-8')
-        import time
-        self._queue.put(data)
-        socket.sendto(b'ack\n', self.client_address)
+        else:
+            self._queue.put(data)
+            socket.sendto(b'ack\n', self.client_address)
 
 
 if __name__ == '__main__':

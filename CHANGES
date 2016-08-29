@@ -2,6 +2,7 @@
  * server: accept multiple config files
  * client: accept host and port options
  * server: better error messages for invalid configuration
+ * server: improved logging
 
 0.1.0:
  * first release
