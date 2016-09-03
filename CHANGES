@@ -1,4 +1,4 @@
-0.1.0-next:
+1.0.0:
  * server: accept multiple config files
  * client: accept host and port options
  * server: better error messages for invalid configuration

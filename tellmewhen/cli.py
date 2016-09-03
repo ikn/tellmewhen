@@ -11,7 +11,7 @@ import json
 from . import event, option
 all_option_defns = list(option.option_defns.__dict__.values())
 
-VERSION = '0.1.0-next'
+VERSION = '1.0.0'
 
 
 class ConfigError (ValueError):
