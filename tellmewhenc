@@ -76,9 +76,6 @@ data: bytes
 
 
 if __name__ == '__main__':
-    if len(sys.argv) == 1:
-        error('missing COMMAND argument')
-
     p = argparse.ArgumentParser(
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
         description='''
@@ -116,6 +113,8 @@ name of the event to start, as defined in the server configuration file
                     ''')
 
     args = p.parse_args()
+    if not hasattr(args, 'command'):
+        error('missing COMMAND argument')
     if args.command == 'start':
         send(args.host, args.port, b'start ' + args.event.encode('utf-8'))
     elif args.command == 'cancel':
