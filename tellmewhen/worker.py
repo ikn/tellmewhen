@@ -144,7 +144,10 @@ timers: `Timer` lookup by `event.Trigger`
         trigger = timer.trigger
         if real_t <= now:
             log('trigger event: {} ({:+.3f})'.format(e, -trigger.time))
-            e.trigger()
+            try:
+                e.trigger()
+            except Exception as err:
+                log('failed to run command:', err)
             new_t = timer_next_time(e, trigger, timer.next_time - trigger.time)
             # replace with an updated timer
             timers[trigger] = Timer(new_t, e, trigger)

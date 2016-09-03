@@ -3,6 +3,7 @@
  * client: accept host and port options
  * server: better error messages for invalid configuration
  * server: improved logging
+ * server: bug: stops handling commands and events if a command execution fails
 
 0.1.0:
  * first release
