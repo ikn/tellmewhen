@@ -20,7 +20,13 @@ import tellmewhen
 option_defns = tellmewhen.option.option_defns
 
 
-def on_quit (options, queue, thread, server):
+def on_quit (queue, thread, server):
+    """exit signal handler
+
+queue: for sending commands to the worker thread
+thread: worker thread
+server: socket server
+"""
     queue.put('quit')
     thread.join()
     server.server_close()
@@ -28,6 +34,12 @@ def on_quit (options, queue, thread, server):
 
 
 class RequestHandler(socketserver.BaseRequestHandler):
+    """server accepting commands
+
+queue: for sending commands to the worker thread
+args, kwargs: as taken by `socketserver.BaseRequestHandler`
+"""
+
     def __init__ (self, queue, *args, **kwargs):
         self._queue = queue
         socketserver.BaseRequestHandler.__init__(self, *args, **kwargs)
@@ -56,7 +68,7 @@ if __name__ == '__main__':
         lambda *args, **kwargs: RequestHandler(queue, *args, **kwargs))
 
     for sig in (signal.SIGTERM, signal.SIGINT):
-        signal.signal(sig, lambda *args: on_quit(options, queue, thread, server))
+        signal.signal(sig, lambda *args: on_quit(queue, thread, server))
 
     thread.start()
     server.serve_forever()

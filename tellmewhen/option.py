@@ -7,10 +7,20 @@ version."""
 
 
 class OptionDefns:
+    """used to store all options"""
     pass
 
 
 class Option:
+    """defines an option accepted by the program
+
+name: identifying name
+parse: function taking a string and returning a valid value for the option; may
+       raise `ValueError`
+default: default value for the option
+desc: description string
+"""
+
     def __init__ (self, name, parse, default, desc):
         self.name = name
         self.default = default
@@ -23,9 +33,14 @@ class Option:
     __repr__ = __str__
 
     def parse (self, value):
+        """parse a string and returns a valid value for the option
+
+Raises `ValueError`.
+"""
         return self._parse(value)
 
 
+"""store of available options"""
 option_defns = OptionDefns()
 
 option_defns.socket_host = Option('socket_host', str, 'localhost',
@@ -39,6 +54,15 @@ option_defns.min_cmd_separation = Option('min_cmd_separation', float, 2,
 
 
 class Options:
+    """store of values for options provided to the program
+
+values: dict providing a lookup of `Option.name` to option value; raises
+        `KeyError` if any names are not in `option_defns`
+
+Supports dict-style item lookup by `Option`.  All options in `option_defns` are
+available.
+"""
+
     def __init__ (self, values):
         self._values = {}
         unknown = set(values) - set(option_defns.__dict__)

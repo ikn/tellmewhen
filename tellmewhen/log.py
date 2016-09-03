@@ -10,6 +10,10 @@ import time
 
 
 def log (*args):
+    """log a message
+
+args: items to append together to create the message
+"""
     t = time.time()
     formatted_time = '[{}.{:03}]'.format(
         time.strftime('%H:%M:%S', time.gmtime(t)),

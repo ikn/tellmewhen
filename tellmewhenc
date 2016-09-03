@@ -13,6 +13,11 @@ VERSION = '0.1.0-next'
 
 
 def error (*args, sock=None):
+    """exit due to fatal error
+
+args: error message
+sock: socket to cleanup
+"""
     print('error:', *args, file=sys.stderr)
     if sock:
         sock.shutdown(socket.SHUT_RDWR)
@@ -20,14 +25,21 @@ def error (*args, sock=None):
 
 
 def send (host, port, data):
+    """send a command to the server
+
+port: int
+data: bytes
+"""
     addr = (host, port)
     s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    # we're using UDP, so we need to wait for the response manually
     s.settimeout(1)
     try:
         s.connect(addr)
     except socket.gaierror as e:
         error('server unreachable:', e)
 
+    # keep sending data until the socket has accepted all of it
     sent = 0
     while sent < len(data):
         try:
@@ -35,19 +47,23 @@ def send (host, port, data):
         except Exception as e:
             error('while sending:', e, sock=s)
         else:
+            # nothing sent means the server went away
             if new_sent == 0:
                 error('server unreachable', sock=s)
             sent += new_sent
     s.shutdown(socket.SHUT_WR)
 
+    # keep receiving data until we receive all expected bytes
     chunks = []
     have = 0
-    while have < 4:
+    expect_data = b'ack\n'
+    while have < len(expect_data):
         try:
-            chunk = s.recv(4 - have)
+            chunk = s.recv(len(expect_data) - have)
         except Exception as e:
             error('while receiving:', e, sock=s)
         else:
+            # nothing received means the server went away (or responded wrongly)
             if chunk == b'':
                 error('server unreachable', sock=s)
             chunks.append(chunk)
@@ -55,7 +71,7 @@ def send (host, port, data):
     s.shutdown(socket.SHUT_RD)
     s.close()
 
-    if b''.join(chunks) != b'ack\n':
+    if b''.join(chunks) != expect_data:
         error('server returned unexpected reply')
 
 
