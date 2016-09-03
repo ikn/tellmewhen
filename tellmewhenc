@@ -9,7 +9,7 @@ import sys
 import socket
 import argparse
 
-VERSION = '1.0.0'
+VERSION = '1.0.0-next'
 
 
 def error (*args, sock=None):

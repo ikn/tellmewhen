@@ -4,6 +4,6 @@
 
 from distutils.core import setup
 
-setup(name='tellmewhen', version='0.1.0-next', packages=[
+setup(name='tellmewhen', version='1.0.0-next', packages=[
     'tellmewhen'
 ])
