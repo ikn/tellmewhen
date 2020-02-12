@@ -47,7 +47,7 @@ properties:
             at which the command should be executed, each with the following
             properties:
     * offset_time: the time relative to the event occurrence at which to execute
-                   the command, in seconds (may (and usually will) negative)
+                   the command, in seconds (may (and usually will) be negative)
 
 An example configuration file can be found in `config.sample.json'.
 
@@ -65,6 +65,7 @@ On Windows, in the source directory, run
 where `python' is the Python 3 interpreter.
 
 On Unix-like OSs, once installed, run
+
     tellmewhend
     tellmewhenc ...
 
